@@ -24,7 +24,7 @@ Script Name: blob_camera customization script
 Description: This script filters the image seen by the blob detector camera. It selects only red objects, and feeds the modified image to blob_camera child script.
 The filter screens for RBG values and proportion of image taken up by the blob detected. It outputs a live view as well.
 
-Script Nmae: blob_camera child script
+Script Name: blob_camera child script
 Description: This script initializes the blob detecting camera. It also opens the detected objects packet, and extracts the number of detected objects, and their positions relative to the sensor. 
 
 The next step is to use this information to allow the robot to make decisons and navigate towards objects of interest.
