@@ -17,7 +17,7 @@ The wait function is a simple function that creates a "wait" feature similar to 
 The sysCall_threadmain function dictates the rover motion. It first initializes, then writes the four wheels to each of the motors. 
 Then it performs a check to see if the blobs are detected. If blobs were detected, it stops moving, then waits half a second before moving to approach the sample that was detected. If no blobs were detected, it begins its pattern of "random motion" turning and moving to find a new sample. 
 
-# UR3 Arm Movemeent and Suctino
+# UR3 Arm Movemeent and Suction
 Script Name: Threaded child script-UR3
 Description: The main UR3 script controls the arm motion and trajectory. In addition, it contains the procedure for placing objects--acquired via the end-effecto--into the containers mounted on the side of the rover.
 
