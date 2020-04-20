@@ -6,7 +6,7 @@ For now, its empty!
 Make sure to come back next update for a more detailed experience where we will get a chance to wow you with our big brians and introductory knowledge of robotics.
 
 
-#Rover main script
+# Rover main script
 Name: Threaded child script: Robotnik
 Description: The main drive script for the base of the rover that controls the "random drive" and the function for the rover to approach a sample when it has been identified.
 
