@@ -19,11 +19,11 @@ Then it performs a check to see if the blobs are detected. If blobs were detecte
 
 # UR3 Arm Movemeent and Suction
 Script Name: Threaded child script-UR3
-Description: The main UR3 script controls the arm motion and trajectory. In addition, it contains the procedure for placing objects--acquired via the end-effecto--into the containers mounted on the side of the rover.
+Description: The main UR3 script controls the arm motion and trajectory. In addition, it contains the procedure for placing objects--acquired via the end-effector--into the containers mounted on the side of the rover.
 
 The main function contains the inverse kinemtaics for the UR3 arm. Future versions of the code will implement call functions to substitute the inverse kinematics code from the main code. In its place code for a trajectory path to the containers can be generated.
 
-The sucker connection also contains a script that will actuate the suction gripper's suction to extract target objects.
+The sucker connector also contains a script that will actuate the suction gripper to extract target objects.
 
 
 # Camera Views and Blob Detection
