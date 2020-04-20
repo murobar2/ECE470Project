@@ -19,6 +19,7 @@ Then it performs a check to see if the blobs are detected. If blobs were detecte
 
 # Camera Views and Blob Detection
 Our robot is simulated to have 2 camera feeds for operator review and one blob detector specific camera.
+
 Script Name: blob_camera customization script
 Description: This script filters the image seen by the blob detector camera. It selects only red objects, and feeds the modified image to blob_camera child script.
 The filter screens for RBG values and proportion of image taken up by the blob detected. It outputs a live view as well.
