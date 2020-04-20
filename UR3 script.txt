@@ -1,0 +1,143 @@
+--Main script for UR3
+function sysCall_threadmain()
+    jointHandles={-1,-1,-1,-1,-1,-1}
+    for i=1,6,1 do
+        jointHandles[i]=sim.getObjectHandle('UR3_joint'..i)
+    end
+    
+
+    --UR3 Inverse Kinematics
+    --Length of each link
+    L1 = 0.152;
+    L2 = 0.120;
+    L3 = 0.244;
+    L4 = 0.093;
+    L5 = 0.213;
+    L6 = 0.083;
+    L7 = 0.083;
+    L8 = 0.082;
+    L9 = 0.0535;
+    L10 = 0.059;
+    
+    Input = {{0.25},{0.25},{0.1},{0}};
+    --Create tranformation matrix T_0W convert world coordinates into frame of
+    --base
+    --R_0W = {{1,0,0},{0,1,0},{0,0,1}};
+    --P_0W = {{0.15},{-0.15},{-0.01}};
+    --T_0W = {{R_0W,P_0W},{0,0,0,1}};
+    T_0W = {{1,0,0,0.15},{0,1,0,-0.15},{0,0,1,-0.01},{0,0,0,1}}
+    
+    --Extract position and yaw from input
+    p_w_grip = {Input[1],Input[2],Input[3],{1}};
+    --print(#p_w_grip[1])
+    YAW = Input[4][1];
+    --Change frame from world coordinates
+    P_0g = MatMul(T_0W,p_w_grip);
+    --print(P_0g)
+    p_0_grip = {P_0g[1],P_0g[2],P_0g[3]};
+    --Find P_center
+    p_xc = p_0_grip[1][1]-L9*math.cos(YAW);
+    p_yc = p_0_grip[2][1]-L9*math.sin(YAW);
+    p_zc = p_0_grip[3][1];
+    P_center = {{p_xc},{p_yc},{p_zc}};
+    --From P_center, find theta1
+    Lc = math.sqrt(P_center[1][1]^2 + P_center[2][1]^2);
+    Loff = math.sqrt(Lc^2-(L6+0.027)^2);
+    alpha = math.acos(((L6+0.027)^2-Loff^2-Lc^2)/(-2*Loff*Lc));
+    beta = math.atan2(p_yc,p_xc);
+    theta1 = beta-alpha;
+    --Theta5 is constrained to -90 degrees in this lab
+    theta5 = -math.pi /2;
+    --Using the YAW and theta1 find theta6
+    theta6 = (math.pi/2)-(YAW-theta1);
+    --Find theta2
+    Rotationfund = {{math.cos(theta1),-math.sin(theta1),0},{math.sin(theta1),math.cos(theta1),0},{0,0,1}};
+    V_c3end = MatMul(Rotationfund,{{-L7},{-(L6+0.027)},{(L10+L8)}});
+    --print(V_c3end)
+    P_3end = MatAdd(P_center, V_c3end);
+    a = math.sqrt(P_3end[1][1]^2+P_3end[2][1]^2+(P_3end[3][1]-L1)^2);
+    phi = math.acos((math.sqrt(P_3end[1][1]^2+P_3end[2][1]^2))/a);
+    gamma = math.acos((-L5^2+a^2+L3^2)/(2*L3*a));
+    theta2 = -gamma-phi;
+    --Find theta3
+    epsilon = math.acos((a^2-L3^2-L5^2)/(-2*L3*L5));
+    theta3 = math.pi - epsilon;
+    --Find theta4
+    eps = (math.pi/2) - phi;
+    rho = math.pi - gamma - epsilon;
+    theta4 = (math.pi/2)-rho-eps;
+    --Group theta 1-6
+    theta = {theta1+math.pi/2,theta2+(math.pi/2),theta3,theta4,theta5,theta6};
+    Theta = {}
+    for i = 1, #theta do
+    th = math.deg(theta[i])
+    Theta[i] = th
+    end
+    print('simulated angles are')
+    print(Theta)
+    print('#####################')
+    --]]
+
+    -- Set-up some of the RML vectors:
+    vel=180
+    accel=40
+    jerk=80
+    currentVel={0,0,0,0,0,0,0}
+    currentAccel={0,0,0,0,0,0,0}
+    maxVel={vel*math.pi/180,vel*math.pi/180,vel*math.pi/180,vel*math.pi/180,vel*math.pi/180,vel*math.pi/180}
+    maxAccel={accel*math.pi/180,accel*math.pi/180,accel*math.pi/180,accel*math.pi/180,accel*math.pi/180,accel*math.pi/180}
+    maxJerk={jerk*math.pi/180,jerk*math.pi/180,jerk*math.pi/180,jerk*math.pi/180,jerk*math.pi/180,jerk*math.pi/180}
+    targetVel={0,0,0,0,0,0}
+
+    --targetPos1={90*math.pi/180,90*math.pi/180,-90*math.pi/180,90*math.pi/180,90*math.pi/180,90*math.pi/180}
+    sim.rmlMoveToJointPositions(jointHandles,-1,currentVel,currentAccel,maxVel,maxAccel,maxJerk,theta,targetVel)
+    print(sim.getObjectPosition(sim.getObjectHandle('suctionPadLoopClosureDummy1'),sim.getObjectHandle('Reference_Frame')))
+
+    --targetPos2={-90*math.pi/180,45*math.pi/180,90*math.pi/180,135*math.pi/180,90*math.pi/180,90*math.pi/180}
+    --sim.rmlMoveToJointPositions(jointHandles,-1,currentVel,currentAccel,maxVel,maxAccel,maxJerk,targetPos2,targetVel)
+
+    --targetPos3={0,0,0,0,0,0}
+    --sim.rmlMoveToJointPositions(jointHandles,-1,currentVel,currentAccel,maxVel,maxAccel,maxJerk,targetPos3,targetVel)
+    
+    
+end
+
+function MatMul( m1, m2 )
+    if #m1[1] ~= #m2 then       -- inner matrix-dimensions must agree
+        return nil      
+    end 
+ 
+    local res = {}
+ 
+    for i = 1, #m1 do
+        res[i] = {}
+        for j = 1, #m2[1] do
+            res[i][j] = 0
+            for k = 1, #m2 do
+                res[i][j] = res[i][j] + m1[i][k] * m2[k][j]
+                --print(res[i][j])
+            end
+        end
+    end
+ 
+    return res
+end
+ 
+
+
+function MatAdd( m1, m2 )
+    if #m1 ~= #m2 or #m1[1] ~= #m2[1] then       -- matrix-dimensions must agree
+        return nil      
+    end 
+ 
+    local res = {}
+ 
+    for i = 1, #m1 do
+        res[i] = {}
+        for j = 1, #m2[1] do
+            res[i][j] = m1[i][j] + m2[i][j]
+        end
+    end
+ 
+    return res
+end
