@@ -18,7 +18,10 @@ The sysCall_threadmain function dictates the rover motion. It first initializes,
 Then it performs a check to see if the blobs are detected. If blobs were detected, it stops moving, then waits half a second before moving to approach the sample that was detected. If no blobs were detected, it begins its pattern of "random motion" turning and moving to find a new sample.  
 
 # Camera Views and Blob Detection
-Script Name: 
+Our robot is simulated to have 2 camera feeds for operator review and one blob detector specific camera.
+Script Name: blob_camera customization script
+
+Script Nmae: blob_camera child script
 
 
 
