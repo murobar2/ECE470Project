@@ -1,21 +1,19 @@
-# ECE470Project
+# ECE470Project: ACE
 ECE 470 - Introduction to Robotics Final Project  
 Team Members: Raymundo Muro Barrios, Joaqin Malik, and Jakob Leiva  
 Hello! Welcome to our README. This will include an in-depth and intuitive summary of our codebase.  
-For now, it's a work in progress!  
-Make sure to come back next update for a more detailed experience where we will get a chance to wow you with our big brains and introductory knowledge of robotics.  
 
 
-# Rover Main Script
-Script Name: Threaded child script: Robotnik  
-Description: The main drive script for the base of the rover that controls the "random drive" and the function for the rover to approach a sample when it has been identified.  
-
-The main rover script has two functions currently: wait and sysCall_threadmain.  
-
-The wait function is a simple function that creates a "wait" feature similar to that of python or most other scripting languages in Lua which doesn't currently have a native wait function.  
+# ACE Rover Main Script
+Script Name: Threaded child script: Robotnik_Chassis_Kinematics.text  
+Description: The main drive script for the base of the rover that controls the sample search protocol, allows the rover to move towards a detected sample, and progresively aligns the rover with a sample before collection. 
 
 The sysCall_threadmain function dictates the rover motion. It first initializes, then writes the four wheels to each of the motors. 
-Then it performs a check to see if the blobs are detected. If blobs were detected, it stops moving, then waits half a second before moving to approach the sample that was detected. If no blobs were detected, it begins its pattern of "random motion" turning and moving to find a new sample. 
+Then it performs a check to see if the blobs are detected. If blobs were detected, it stops moving, then waits half a second before moving to approach the sample that was detected. If no blobs were detected, it begins its pattern of "random motion" turning and moving to find a new sample. Currently, the searching protocol is simply turning in a wide arc to the right, but in future works, more advance algoriths, and even mapping abilities, could be added to ACE.
+When a sample is detected, the rover will read in the information about distance and heading from the camera sensors. The Robotnik chassis is programmed to approach the sample, adjusting its wheel speed as needed to keep the sample heading as close to zero as possible, or directly ahead. In order to keep the movement of the chassis as smooth as possible, the heading correction is progressive, and depends on how far the sample is, enabling the rover to adjust to the changing terrain as it nears the sample. Additionally, the heading correction script allows for a small tolerance of a few degrees, allowing the chassis to move smooth and straight, without having to adjust its heading constantly. 
+-Sample Collection
+As the ACE chassis approaches a sample, it will slowdown and proceed to drive above the sample. ACE will stop once the sample is detected in the rear camera sensor. It will proceed to adjust its wheel speeds to align the sample with the UR3's optimal collection position. Once the sample is in the optimal location with respect to the reart camera sensor, the chasis stops and sample collection is conducted. 
+The robotnik chassis is programmed to wait for 8 seconds for suction between the robotic arm and the sample to occur, and begins to locate the next sample as the current sample is dumped in  a collection bucket.
 
 # UR3 Arm Movemeent and Suction
 Script Name: Threaded child script-UR3
