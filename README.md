@@ -1,4 +1,4 @@
-# ECE470Project: ACE
+# ECE470 Final Project: ACE (Autonomous Collector Explorer)
 ECE 470 - Introduction to Robotics Final Project  
 Team Members: Raymundo Muro Barrios, Joaqin Malik, and Jakob Leiva  
 Hello! Welcome to our README. This will include an in-depth and intuitive summary of our codebase.  
