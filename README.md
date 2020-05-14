@@ -28,6 +28,7 @@ The sucker connector also contains a script that will actuate the suction grippe
 ACE is fitted with 2 camera sensors used for blob detection and navigation, as well as 2 cameras used simply to provide a view from ACE's perspective.
 
 Front Script Name: Sensing_Blob_Detection_Setup_Front.text and Sensing_Blob_Detection_Analysis_Front.text
+
 Rear Script Name: Sensing_Blob_Detection_Setup_Rear.text and Sensing_Blob_Detection_Analysis_Rear.text
 
 Description: These scripts filters the image seen by the blob detector camera. They select only red objects above a certain size and outputs the distance, and heading towards the closest sample seen by the camera sensor.
