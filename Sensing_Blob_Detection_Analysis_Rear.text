@@ -1,5 +1,6 @@
 function sysCall_init()
-
+    --This script is charged with outputing the distance and heading of the sample just before collection
+    --Its output is used to align the Robotnik with the sample so that the UR3 arm can easily collect
     sensor=sim.getObjectAssociatedWithScript(sim.handle_self)
     sphereContainer=sim.addDrawingObject(sim.drawing_spherepoints,0.03,0,-1,9999,{1,0,1})
     local res
