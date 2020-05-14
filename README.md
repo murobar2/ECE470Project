@@ -4,16 +4,16 @@ Team Members: Raymundo Muro Barrios, Joaqin Malik, and Jakob Leiva
 Hello! Welcome to our README. This will include an in-depth and intuitive summary of our codebase.  
 
 
-# ACE Rover Main Script
+# ACE Rover Script
 Script Name: Threaded child script: Robotnik_Chassis_Kinematics.text  
 Description: The main drive script for the base of the rover that controls the sample search protocol, allows the rover to move towards a detected sample, and progresively aligns the rover with a sample before collection. 
 
 The sysCall_threadmain function dictates the rover motion. It first initializes, then writes the four wheels to each of the motors. 
-Then it performs a check to see if the blobs are detected. If blobs were detected, it stops moving, then waits half a second before moving to approach the sample that was detected. If no blobs were detected, it begins its pattern of "random motion" turning and moving to find a new sample. Currently, the searching protocol is simply turning in a wide arc to the right, but in future works, more advance algoriths, and even mapping abilities, could be added to ACE.
-When a sample is detected, the rover will read in the information about distance and heading from the camera sensors. The Robotnik chassis is programmed to approach the sample, adjusting its wheel speed as needed to keep the sample heading as close to zero as possible, or directly ahead. In order to keep the movement of the chassis as smooth as possible, the heading correction is progressive, and depends on how far the sample is, enabling the rover to adjust to the changing terrain as it nears the sample. Additionally, the heading correction script allows for a small tolerance of a few degrees, allowing the chassis to move smooth and straight, without having to adjust its heading constantly. 
+It then performs a check to see if blobs are detected. If blobs are detected, it begins adjusting its wheel speeds and points towards the detected sample. If no blobs were detected, it begins its pattern of "random motion" turning and moving to find a new sample. Currently, the searching protocol is simply turning in a wide arc to the right, but in future works, more advance algoriths, and even mapping abilities, could be added to ACE.
+When a sample is detected, the rover will read in the information about distance and heading from the camera sensors. The Robotnik chassis is programmed to approach the sample, adjusting its wheel speed as needed to keep the sample heading as close to zero as possible, or in other words, directly ahead. In order to keep the movement of the chassis as smooth as possible, the heading correction is progressive, and depends on how far the sample is, enabling the rover to adjust to the changing terrain as it nears the sample. Additionally, the heading correction script allows for a small tolerance of a few degrees, allowing the chassis to move smoothly and straight, without having to adjust its heading constantly, causing jerky motion. 
 -Sample Collection
-As the ACE chassis approaches a sample, it will slowdown and proceed to drive above the sample. ACE will stop once the sample is detected in the rear camera sensor. It will proceed to adjust its wheel speeds to align the sample with the UR3's optimal collection position. Once the sample is in the optimal location with respect to the reart camera sensor, the chasis stops and sample collection is conducted. 
-The robotnik chassis is programmed to wait for 8 seconds for suction between the robotic arm and the sample to occur, and begins to locate the next sample as the current sample is dumped in  a collection bucket.
+As the ACE chassis approaches a sample, it will slow down and proceed to drive above the sample. ACE will stop once the sample is detected in the rear camera sensor. It will proceed to adjust its wheel speeds to align the sample with the UR3's optimal collection position. Once the sample is in the optimal location with respect to the reart camera sensor, the chassis stops and sample collection is conducted. 
+The robotnik chassis is programmed to wait for 8 seconds for suction between the robotic arm and the sample to occur, and begins to locate the next sample as the current sample is dumped in a collection bucket by the UR3.
 
 # UR3 Arm Movemeent and Suction
 Script Name: Threaded child script-UR3
