@@ -1,0 +1,237 @@
+function updateInputs()
+
+    --Reads Updated Information From Vision Sensors And Returns The Values Within This Script
+
+    blobCnt=sim.getDoubleSignal("blobCnt")
+    Front_Distance=sim.getDoubleSignal("Front_Distance")
+    Front_Heading=sim.getDoubleSignal("Front_Heading")
+    Rear_Distance=sim.getDoubleSignal("Rear_Distance")
+    Rear_Heading=sim.getDoubleSignal("Rear_Heading")
+    rear_blobCnt=sim.getDoubleSignal("rear_blobCnt")
+    norm_head_f=Front_Heading/90
+    norm_head_r=Rear_Heading/90
+    end
+    
+function sysCall_threadmain()
+
+    --Initializing these variables, as there is a lag between this script and the sensor signals
+
+    sim.setDoubleSignal("Front_Heading",1)
+	sim.setDoubleSignal("Rear_Heading",1)
+	sim.setDoubleSignal("Front_Distance",1)
+	sim.setDoubleSignal("Rear_Distance",1)
+	sim.setDoubleSignal("blobCnt",0)
+    sim.setDoubleSignal("rear_blobCnt",0)
+    sim.setDoubleSignal("UR3_Get_Ready",2)
+    sim.setDoubleSignal("UR3_Collect",2)
+    Rear_Heading=sim.getDoubleSignal("Rear_Heading")
+    Front_Heading=sim.getDoubleSignal("Front_Heading")
+    Front_Distance=sim.getDoubleSignal("Front_Distance")
+    Rear_Distance=sim.getDoubleSignal("Rear_Distance")
+    Stop_Distance=0.5
+    Sample_Counter=0
+    Max_Samples=20
+    --Max_Samples stops the scripts after a specified number of samples collected. This can help so that ACE stops after all samples are picked up.
+
+	--Intitializing Chassis and Wheel Handles
+
+    motorHandles={-1,-1,-1,-1}
+    motorHandles[1]=sim.getObjectHandle('joint_front_left_wheel')
+    motorHandles[2]=sim.getObjectHandle('joint_back_left_wheel')
+    motorHandles[3]=sim.getObjectHandle('joint_back_right_wheel')
+    motorHandles[4]=sim.getObjectHandle('joint_front_right_wheel')
+
+    --Initializing Wheel Velocities to zero
+
+    for i=1,4,1 do
+        sim.setJointTargetVelocity(motorHandles[i],0)
+    end
+
+    --Waiting for the sensors to wake up and inititalize
+
+    print("Initializing...") 
+    print("Boop...Beep Beep...Boop")
+    local clock = os.clock
+    local t0 = clock()
+    while clock() - t0 <= 3 do 
+        clock = os.clock
+        end 
+    print("Hello World!")
+
+    --Repeating While Loop For All Simulation Time 
+
+    while_loop=true
+    while 1<= 1 and while_loop and Sample_Counter<Max_Samples do 
+        updateInputs()
+        sim.setDoubleSignal("UR3_ON",1)
+
+    --First, decide which way to turn given that a blob has been detected.    
+        if blobCnt> 0 then
+           --Proceeds until a specified distance from sample
+            while Front_Distance>Stop_Distance do
+                --print("Target Acquired")                       
+                --TURN LEFT if sample on the left, using the heading angle output from sensors
+
+                    if Front_Heading>1 and blobCnt>0 and Front_Distance>Stop_Distance then
+                            --How to turn left
+                            while Front_Heading >0 and blobCnt>0 and Front_Distance>Stop_Distance do
+                                if Front_Heading>1.5 then
+
+                                    --mltplr is a coeficient that amplifies the self-correcting adjustments while steering
+                                    mltplr=3
+                                else
+                                    mltplr=1
+                                end
+                                right_velocity=(3+10*norm_head_f/(Front_Distance^5))*mltplr
+                                left_velocity=1*mltplr
+                                sim.setJointTargetVelocity(motorHandles[1],left_velocity)
+                                sim.setJointTargetVelocity(motorHandles[2],left_velocity)
+                                sim.setJointTargetVelocity(motorHandles[3],-right_velocity)
+                                sim.setJointTargetVelocity(motorHandles[4],-right_velocity)
+                                updateInputs()
+                            end 
+                                       
+                                       
+                        --TURN RIGHT         
+                    elseif Front_Heading<-1 and blobCnt>0 and Front_Distance>Stop_Distance then --turn right
+                            --How to turn right                        
+                            while Front_Heading <0 and blobCnt>0 and Front_Distance>Stop_Distance do
+                                if Front_Heading>1.5 then
+                                    mltplr=3
+                                else
+                                    mltplr=1
+                                end
+                                right_velocity=1*mltplr
+                                left_velocity=(3-(10*norm_head_f)/(Front_Distance^5))*mltplr
+                                sim.setJointTargetVelocity(motorHandles[1],left_velocity)
+                                sim.setJointTargetVelocity(motorHandles[2],left_velocity)
+                                sim.setJointTargetVelocity(motorHandles[3],-right_velocity)
+                                sim.setJointTargetVelocity(motorHandles[4],-right_velocity)
+                                updateInputs()
+                            end
+                                
+                                
+                        --STRAIGHT        
+                    else --keep straight
+                                if Front_Heading>1.5 then
+                                    mltplr=3
+                                else
+                                    mltplr=1
+                                end
+                                sim.setJointTargetVelocity(motorHandles[1],2*mltplr)
+                                sim.setJointTargetVelocity(motorHandles[2],2*mltplr)
+                                sim.setJointTargetVelocity(motorHandles[3],-2*mltplr)
+                                sim.setJointTargetVelocity(motorHandles[4],-2*mltplr)
+                                updateInputs()
+                    end 
+            end
+
+            -- Once ACE has arrived at the stop, distance, the chassis maneuvers for pick-up
+
+           if blobCnt>0 and Front_Distance<=Stop_Distance then
+                    sim.setJointTargetVelocity(motorHandles[1],0)   --Chassis stops momentarily
+                    sim.setJointTargetVelocity(motorHandles[2],0)
+                    sim.setJointTargetVelocity(motorHandles[3],0)
+                    sim.setJointTargetVelocity(motorHandles[4],0)
+                    
+                    print("Maneuvering for Sample Collection...")
+
+                    --Message UR3 to maneuver to a ready position
+
+                    sim.setDoubleSignal("UR3_Get_Ready",1)
+                    sim.setDoubleSignal("UR3_Collect",1)
+                    --sim.setDoubleSignal("UR3_Collect",1)
+
+                    --Vehicle drives over sample, stopping when within UR3 range
+                    while rear_blobCnt==0 do 
+                        sim.setJointTargetVelocity(motorHandles[1],1.25)
+                        sim.setJointTargetVelocity(motorHandles[2],1.25)
+                        sim.setJointTargetVelocity(motorHandles[3],-1.25)
+                        sim.setJointTargetVelocity(motorHandles[4],-1.25)
+                        updateInputs()
+
+                        
+                        
+                    end
+                    --Vehicle will now align and maneuver within UR3 grasping range
+                    while Rear_Distance<0.38 do  
+                        right_velocity=0.75
+                        left_velocity=0.75
+                        if Rear_Heading>1 then--Turn Right
+                            right_velocity=0.75 +(2*norm_head_r)/(Rear_Distance^2)  --Corrected Right and Left Approach Velocities
+                            left_velocity=0.75 -(2*norm_head_r)/(Rear_Distance^2)   --This Helps Align Vehicle for Sample Collection
+                            sim.setJointTargetVelocity(motorHandles[1],left_velocity)
+                            sim.setJointTargetVelocity(motorHandles[2],left_velocity)
+                            sim.setJointTargetVelocity(motorHandles[3],-right_velocity)
+                            sim.setJointTargetVelocity(motorHandles[4],-right_velocity)
+                        elseif Rear_Heading<-1 then
+                            right_velocity=0.75 +(2*norm_head_r)/(Rear_Distance^2)  --Corrected Right and Left Approach Velocities
+                            left_velocity=0.75-(2*norm_head_r)/(Rear_Distance^2)    --This Helps Align Vehicle for Sample Collection
+                            sim.setJointTargetVelocity(motorHandles[1],left_velocity)
+                            sim.setJointTargetVelocity(motorHandles[2],left_velocity)
+                            sim.setJointTargetVelocity(motorHandles[3],-right_velocity)
+                            sim.setJointTargetVelocity(motorHandles[4],-right_velocity)
+                        end
+                        updateInputs()
+                    end
+                    --Cease locomotion
+                    --Begin sample collection
+                    sim.setJointTargetVelocity(motorHandles[1],0)   --Wheels are locked while UR3 collects sample
+                    sim.setJointTargetVelocity(motorHandles[2],0)
+                    sim.setJointTargetVelocity(motorHandles[3],0)
+                    sim.setJointTargetVelocity(motorHandles[4],0)
+                    while_loop=false
+                    print("Stopped for Collection")
+                    --Message UR3 to begin collection script
+                    sim.setDoubleSignal("UR3_Get_Ready",0)
+                    
+
+                    --Wheels are locked for a specified time, allowing for collection, then resumes locomotion
+                    local clock = os.clock
+                    local t0 = clock()
+                    while clock() - t0 <= 8 do 
+                        clock = os.clock
+                    end
+                    Sample_Counter=Sample_Counter+1
+                    --Pick_up Complete
+                    --Message to UR3 to return to home position
+                    --Resume collection protocol
+                    print("Collection Complete")
+                    while_loop=true
+                    sim.setDoubleSignal("UR3_Collect",0)
+                    
+                end  
+            
+        else
+                --Sample searching protocol
+                --No samples detected, searching protocol engaged
+            while blobCnt==0 do
+                print("Searching...")
+
+                --Currently, searching protocol is simply a wide, continuous right turn, stopping upon sample detection from camera sensors
+                --Future work can be done to improve this
+                sim.setJointTargetVelocity(motorHandles[1],4)
+                sim.setJointTargetVelocity(motorHandles[2],4)
+                sim.setJointTargetVelocity(motorHandles[3],-0.5)
+                sim.setJointTargetVelocity(motorHandles[4],-0.5)
+                updateInputs()
+                end
+
+                
+     
+     
+     
+        
+        end
+     end
+
+     --Simulation End Protocol
+     --Stop once a user defined number of samples have been collected
+     print("Battery Depleted. Samples Collected:    "..tostring(Sample_Counter))
+     sim.setJointTargetVelocity(motorHandles[1],0)
+     sim.setJointTargetVelocity(motorHandles[2],0)
+     sim.setJointTargetVelocity(motorHandles[3],0)
+     sim.setJointTargetVelocity(motorHandles[4],0)
+    
+
+end
