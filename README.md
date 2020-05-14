@@ -24,18 +24,14 @@ The main function contains the inverse kinemtaics for the UR3 arm. Future versio
 The sucker connector also contains a script that will actuate the suction gripper to extract target objects.
 
 
-# Camera Views and Blob Detection
-Our robot is simulated to have 2 camera feeds for operator review and one blob detector specific camera.
+# Camera Sensors and Blob Detection Scheme
+ACE is fitted with 2 camera sensors used for blob detection and navigation, as well as 2 cameras used simply to provide a view from ACE's perspective.
 
-Script Name: blob_camera customization script
-Description: This script filters the image seen by the blob detector camera. It selects only red objects, and feeds the modified image to blob_camera child script.
-The filter screens for RBG values and proportion of image taken up by the blob detected. It outputs a live view as well.
+Front Script Name: Sensing_Blob_Detection_Setup_Front.text and Sensing_Blob_Detection_Analysis_Front.text
+Rear Script Name: Sensing_Blob_Detection_Setup_Rear.text and Sensing_Blob_Detection_Analysis_Rear.text
 
-Script Name: blob_camera child script
-Description: This script initializes the blob detecting camera. It also opens the detected objects packet, and extracts the number of detected objects, and their positions relative to the sensor. 
-
-The next step is to use this information to allow the robot to make decisons and navigate towards objects of interest.
-
+Description: These scripts filters the image seen by the blob detector camera. They select only red objects above a certain size and outputs the distance, and heading towards the closest sample seen by the camera sensor.
+The distance and heading information output by the front sensor is used to navigate to samples, while the heading and distance from the rear sensors is used to align and stop the Robotnik chassis in an ideal location for sample collection, where the UR3 arm can reach and pick up the sample.
 
 
 Till next time.
