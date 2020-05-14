@@ -1,6 +1,9 @@
 function sysCall_init()
 end
 
+--This script reads the signal coming from the camera sensor. It transfers the input into a 2D image, and uses blob detection to
+--export a packet including the number of blobs, their centroids, and their distance from the camera in camera frame.
+
 function sysCall_vision(inData)
     -- callback function automatically added for backward compatibility
     -- (vision sensor have no filters anymore, but rather a callback function where image processing can be performed)
@@ -10,8 +13,12 @@ function sysCall_vision(inData)
     
     
     simVision.sensorImgToWorkImg(inData.handle)
+    
+    --Selectively filter for red pixels. This will allow us to distinguish between samples and the background.
+    --RGB Values for red (255,0,0) are selected.
     simVision.selectiveColorOnWorkImg(inData.handle, {255,0,0},{254,0,0},true,true,true)
-
+    
+    --We also specifiy how large a blob must be, as well as the tolerance, to disregard small groups of red pixels that may be found in the sand.
     local trig,packedPacket=simVision.blobDetectionOnWorkImg(inData.handle,0.010000,0.000000,true) if trig then retVal.trigger=true end if packedPacket then retVal.packedPackets[#retVal.packedPackets+1]=packedPacket end
     simVision.workImgToSensorImg(inData.handle)
     return retVal
