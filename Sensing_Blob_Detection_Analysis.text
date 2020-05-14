@@ -1,4 +1,9 @@
+--This script is charged with interpretting the data incoming from the camera sensor, 
+--and outputing the location, distance, and heading towards the nearest sample within the camera's view.
+
 function sysCall_init()
+    sim.front_sample=false
+    sim.setDoubleSignal("UR3_Get_Ready",0)
     sensor=sim.getObjectAssociatedWithScript(sim.handle_self)
     sphereContainer=sim.addDrawingObject(sim.drawing_spherepoints,0.03,0,-1,9999,{1,0,1})
     local res
@@ -18,12 +23,23 @@ function sysCall_init()
 end
 
 function sysCall_sensing()
+    --Initializing Values
+    local distance={}
+    local all_blobs={}
+    local previous_distance=1000
+    local index_val=0
+    
+    
     local m=sim.getObjectMatrix(sensor,-1)
     sim.addDrawingObjectItem(sphereContainer,nil)
     local res,packet1,packet2=sim.handleVisionSensor(sensor)
     if res>=0 then
         local blobCnt=packet2[1]
+        sim.setDoubleSignal("blobCnt",blobCnt) --Outputs blob count to system
+                
         local valCnt=packet2[2]
+        
+
         for i=0,blobCnt-1,1 do
             local blobSize=packet2[2+valCnt*i+1]
             local blobOrientation=packet2[2+valCnt*i+2]
@@ -38,14 +54,52 @@ function sysCall_sensing()
             local y=blobPositionY-0.5
             coord[1]=depth*math.tan(xAngle*0.5)*(0.5-blobPositionX)/0.5
             coord[2]=depth*math.tan(yAngle*0.5)*(blobPositionY-0.5)/0.5
-            coord=sim.multiplyVector(m,coord)
-            print("Blob Coordinates and Count")
-            print(coord)
-            print(blobCnt)
+            coord_w=sim.multiplyVector(m,coord)-- world coordinates...ish
+            all_blobs[i]=coord
+            --Calculating Euclidean Distance to each blob detected
+            distance[i]=((all_blobs[i][1])^2+(all_blobs[i][3])^2+(all_blobs[i][2])^2)^0.5
+            dist=distance[i]
+            if dist<previous_distance then
+                -- Determines distance of closest sample
+                previous_distance=dist
+                index_val=i
+            end
             -- coord now contains the position of the blob, in world coordinates
-            sim.addDrawingObjectItem(sphereContainer,coord)
+            sim.addDrawingObjectItem(sphereContainer,coord_w)
+            
         end
-    end
+        if blobCnt >0 then
+            sim.front_sample=true
+            local min_distance=previous_distance
+            local nearest=all_blobs[index_val] --Accesses the coordinates for the blob that is closest to the chassis
+            
+            --Determining the heading to the nearest sample
+            local X=nearest[1]
+            local Z=nearest[3]
+            local V=X/Z
+            heading_to_closest=math.asin(V)*180/math.pi
+            front_print="Heading to nearest sample:     ".. tostring(heading_to_closest).." Degrees     Distance:     "..tostring(min_distance)
+            sim.setDoubleSignal("Front_Distance",min_distance)
+            sim.setDoubleSignal("Front_Heading",heading_to_closest)
+
+
+        else 
+            blobCnt=0
+            --Output signals to system
+            sim.setDoubleSignal("blobCnt",blobCnt)
+            sim.setDoubleSignal("Front_Distance",100)
+            sim.setDoubleSignal("Front_Heading",0)
+            sim.front_sample=false
+           --print( "Closest Blob:",0,"Blobs:", 0)
+           --print("No Sample Detected")
+        end
+       
+       
+        end
+        
+        
+        
+    
 end
 
 function sysCall_cleanup()
