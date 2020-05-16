@@ -20,12 +20,14 @@ As the ACE chassis approaches a sample, it will slow down and proceed to drive a
 The robotnik chassis is programmed to wait for 8 seconds for suction between the robotic arm and the sample to occur, and begins to locate the next sample as the current sample is dumped in a collection bucket by the UR3.
 
 # UR3 Arm Movemeent and Suction
-Script Name: Threaded child script-UR3
+Script Name: UR3_Kinematics.text
 Description: The main UR3 script controls the arm motion and trajectory. In addition, it contains the procedure for placing objects--acquired via the end-effector--into the containers mounted on the side of the rover.
 
 The main function contains the code for aquiring desired positions and actuating the robot arm in its tucked, ready, pick-up, and bin placement modes. the forward kinemtaics has been heavily used to find the positions for the different setting modes of the UR3 arm. Code has been written with the intent of using inverse kinematics to find more accurate joint angles for the UR3 to arm to increase collection capability. Further development of inverse kinematics still needs to be done before implentation.
 
-The sucker connector also contains a script that actuates the suction gripper to extract target objects.
+
+Script Name: UR3_BaxterVacuumCup.txt
+Descripion: Contains a script that actuates the suction gripper to extract target objects.
 
 
 # Camera Sensors and Blob Detection Scheme
