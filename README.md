@@ -27,7 +27,7 @@ Description: The main UR3 script controls the arm motion and trajectory. In addi
 The main function contains the code for aquiring desired positions and actuating the robot arm in its tucked, ready, pick-up, and bin placement modes. the forward kinemtaics has been heavily used to find the positions for the different setting modes of the UR3 arm. Code has been written with the intent of using inverse kinematics to find more accurate joint angles for the UR3 to arm to increase collection capability. Further development of inverse kinematics still needs to be done before implentation.
 
 
-Script Name: UR3_BaxterVacuumCup.txt
+Script Name: UR3_BaxterVacuumCup.text
 
 Descripion: Contains a script that actuates the suction gripper to extract target objects.
 
